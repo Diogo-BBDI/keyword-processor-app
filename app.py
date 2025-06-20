@@ -66,9 +66,7 @@ st.markdown("""
     gap: 0.75rem;
     margin-bottom: 1.25rem;
     padding-bottom: 0.75rem;
-    border-bottom: 1–
-
-1px solid rgba(71, 85, 105, 0.2);
+    border-bottom: 1px solid rgba(71, 85, 105, 0.2);
 }
 
 .card-icon {
@@ -138,7 +136,7 @@ st.markdown("""
 .stButton > button:hover, .stDownloadButton > button:hover {
     background: linear-gradient(135deg, #2563eb, #1e40af);
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 8px 24px rgba(59, 130, 246,0.3);
 }
 
 .stButton > button:active, .stDownloadButton > button:active {
@@ -146,7 +144,7 @@ st.markdown("""
 }
 
 /* Estilo para botão desativado */
-.stDownloadButton > button:disabled {
+.stButton > button:disabled, .stDownloadButton > button:disabled {
     background: linear-gradient(135deg, #64748b, #475569);
     color: #94a3b8;
     cursor: not-allowed;
@@ -249,7 +247,7 @@ label, .css-1kyxreq, .css-14xtw13, .css-81oif8, .css-1aumxhk {
     background: rgba(30, 41, 59, 0.4);
     border: 1px solid rgba(71, 85, 105, 0.3);
     border-radius: 10px;
-    margin: 0.5rem 0;
+    margin: 0.5-resm;
 }
 
 .stExpander > div > div > div {
@@ -536,9 +534,10 @@ with col_right:
     
     # Estado inicial do botão de download
     if 'download_data' not in st.session_state:
-        st.session_state.download_data = b""  # Valor padrão seguro (bytes vazios)
-        st.session_state.download_filename = "resultados.csv"
-        st.session_state.download_mime = "text/csv"
+        st.session_state.download_data = None
+        st.session_state.download_filename = None
+        st.session_state.download_mime = None
+        st.session_state.export_format = "CSV"  # Formato padrão
     
     # Control buttons
     st.markdown("<div class='button-container'>", unsafe_allow_html=True)
@@ -547,14 +546,18 @@ with col_right:
         start_button = st.button("🚀 Processar", type="primary")
     with button_col2:
         download_label = f"📥 Baixar {st.session_state.get('export_format', 'CSV')}"
-        download_placeholder = st.download_button(
-            label=download_label,
-            data=st.session_state.download_data,
-            file_name=st.session_state.download_filename,
-            mime=st.session_state.download_mime,
-            disabled=st.session_state.download_data == b"",
-            type="secondary"
-        )
+        if st.session_state.download_data is None:
+            # Renderizar um botão comum desativado como placeholder
+            st.button(download_label, disabled=True, type="secondary")
+        else:
+            # Renderizar o botão de download quando os dados estão disponíveis
+            st.download_button(
+                label=download_label,
+                data=st.session_state.download_data,
+                file_name=st.session_state.download_filename,
+                mime=st.session_state.download_mime,
+                type="secondary"
+            )
     st.markdown("</div>", unsafe_allow_html=True)
 
 # Log Section
@@ -605,7 +608,7 @@ if start_button:
         exclusion_count = 0
         for txt_file in exclusion_files or []:
             try:
-                lines = txt_file.read().decode('utf-8'). personally_splitlines()
+                lines = txt_file.read().decode('utf-8').splitlines()
                 new_words = {line.strip().lower() for line in lines if line.strip()}
                 remove_words.update(new_words)
                 exclusion_count += len(new_words)
