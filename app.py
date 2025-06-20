@@ -78,7 +78,7 @@ label, .css-1kyxreq, .css-14xtw13, .css-81oif8, .css-1aumxhk {
 st.markdown("""
 <h1 style="text-align:center; color:#63b3ed; font-size: 2.8rem; margin-bottom: 0.2em; margin-top: 0.5rem;">🔍 Processador de Palavras-chave</h1>
 <p style="text-align:center; font-size: 1.1rem; color: #e2e8f0;">
-Envie arquivos com palavras-chave e termos de exclusão. Visual escuro, animações suaves e UX aprimorado.
+Envie arquivos com palavras-chave e termos de exclusão.
 </p>
 """, unsafe_allow_html=True)
 
@@ -96,9 +96,11 @@ with col_uploads:
     os.makedirs(PRESET_DIR, exist_ok=True)
     preset_files = [f for f in os.listdir(PRESET_DIR) if f.endswith('.txt')]
     selected_presets = st.multiselect("Arquivos de Exclusão Predefinidos", preset_files)
-    mode = st.selectbox("Modo de Duplicatas", ['global', 'keep_by_source', 'merge_sources'], index=2)
+    mode = st.selectbox("Modo de Duplicatas", ['Global - Remove Todas as Duplicatas','Por Arquivo - Mantén se vierem de arquivos diferentes','Mesclar - Remove Duplicatas e Soma os Volumes'], index=2)
 
 with col_feedback:
+    progress_status = st.empty()
+    progress_bar = st.progress(0)
     log_area = st.empty()
     log_buffer = []
     button_col1, button_col2 = st.columns(2)
