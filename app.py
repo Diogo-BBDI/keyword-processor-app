@@ -78,7 +78,7 @@ label, .css-1kyxreq, .css-14xtw13, .css-81oif8, .css-1aumxhk {
 st.markdown("""
 <h1 style="text-align:center; color:#63b3ed; font-size: 2.8rem; margin-bottom: 0.2em; margin-top: 0.5rem;">🔍 Processador de Palavras-chave</h1>
 <p style="text-align:center; font-size: 1.1rem; color: #e2e8f0;">
-Envie arquivos com palavras-chave e termos de exclusão. Visual escuro, animações suaves e UX aprimorado.
+Envie arquivos com palavras-chave e termos de exclusão.
 </p>
 """, unsafe_allow_html=True)
 
@@ -96,7 +96,7 @@ with col_uploads:
     os.makedirs(PRESET_DIR, exist_ok=True)
     preset_files = [f for f in os.listdir(PRESET_DIR) if f.endswith('.txt')]
     selected_presets = st.multiselect("Arquivos de Exclusão Predefinidos", preset_files)
-    mode = st.selectbox("Modo de Duplicatas", ['global', 'keep_by_source', 'merge_sources'], index=2)
+    mode = st.selectbox("Modo de Duplicatas", ['Global - Remove Todas as Duplicatas','Por Arquivo - Mantén se vierem de arquivos diferentes','Mesclar - Remove Duplicatas e Soma os Volumes'], index=2)
 
 with col_feedback:
     progress_status = st.empty()
@@ -115,14 +115,6 @@ def log(message):
     if len(log_buffer) > 100:
         log_buffer.pop(0)
     log_area.markdown(f'<div class="log-box">' + '<br>'.join(log_buffer) + '</div>', unsafe_allow_html=True)
-
-
-# Botões lado a lado após logs
-col1, col2 = st.columns(2)
-with col1:
-    start_button = st.button("🚀 Iniciar Processamento")
-with col2:
-    download_button = st.button("⬇️ Baixar Resultado")
 
 if start_button:
     if not keyword_files:
@@ -167,7 +159,7 @@ if start_button:
             except Exception as e:
                 log(f"❌ Erro em {f.name}: {str(e)}")
 
-            progress_bar.progress((i + 1) / total_files)
+            progress_bar.progress((i + 1) / total_files, text=f"{int((i + 1) / total_files * 100)}%")
 
         if all_keywords:
             log("🧮 Combinando e deduplicando...")
@@ -204,9 +196,14 @@ if start_button:
                     st.markdown('<div class="metric-card"><div class="metric-title">Volume Total</div><div class="metric-value">{:,.0f}</div></div>'.format(volume_total), unsafe_allow_html=True)
 
             csv = df_final.to_csv(index=False).encode('utf-8')
-            st.download_button("📥 Baixar CSV", csv, file_name="keywords_processadas.csv", mime='text/csv')
+            with button_col2:
+                download_button_placeholder.download_button(
+                    label="📥 Baixar CSV",
+                    data=csv,
+                    file_name="keywords_processadas.csv",
+                    mime="text/csv"
+                )
             st.dataframe(df_final.head(50))
-
         else:
             log("⚠️ Nenhum dado válido encontrado.")
 
