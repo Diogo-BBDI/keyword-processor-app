@@ -233,6 +233,14 @@ label, .css-1kyxreq, .css-14xtw13, .css-81oif8, .css-1aumxhk {
     font-weight: 500;
 }
 
+.stDownloadButton > button:disabled {
+    background: linear-gradient(135deg, #4b5563, #374151);
+    color: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+
 .status-warning {
     color: #f59e0b;
     font-weight: 500;
@@ -524,12 +532,20 @@ with col_right:
     progress_status = st.empty()
     progress_bar = st.progress(0)
     
-    # Control buttons
-    button_col1, button_col2 = st.columns(2)
-    with button_col1:
-        start_button = st.button("🚀 Processar", type="primary")
-    with button_col2:
-        download_placeholder = st.empty()
+st.markdown("<div class='button-container'>", unsafe_allow_html=True)
+button_col1, button_col2 = st.columns([1, 1])
+with button_col1:
+    start_button = st.button("🚀 Processar", type="primary")
+with button_col2:
+    download_placeholder = st.download_button(
+        label="📥 Baixar Resultados",
+        data=st.session_state.download_data,
+        file_name=st.session_state.download_filename,
+        mime=st.session_state.download_mime,
+        disabled=st.session_state.download_data is None,
+        type="secondary"
+    )
+st.markdown("</div>", unsafe_allow_html=True)
 
 # Log Section
 st.markdown("""
