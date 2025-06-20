@@ -6,6 +6,7 @@ import time
 
 st.set_page_config(page_title="Processador de Palavras-chave", layout="wide")
 
+# Estilo Dark Premium com UX refinado e espaçamento ideal
 st.markdown("""
 <style>
 body {
@@ -42,7 +43,7 @@ body {
   color: #63b3ed;
 }
 .stButton>button {
-  background: linear-gradient(to right, #3182ce, #5a67d8);
+  background: linear-gradient(to right, #38b2ac, #4299e1);
   color: white;
   padding: 0.75rem 1.5rem;
   border: none;
@@ -52,20 +53,20 @@ body {
   width: 100%;
 }
 .stButton>button:hover {
-  box-shadow: 0 4px 16px rgba(90,103,216,0.4);
+  box-shadow: 0 4px 16px rgba(66,153,225,0.4);
   transform: translateY(-2px);
 }
 .log-box {
   background: #1a202c;
   border-radius: 12px;
   padding: 1rem;
-  margin-top: 2rem;
   height: 300px;
   overflow-y: auto;
   font-family: monospace;
   font-size: 13px;
   color: #e2e8f0;
   border: 1px solid #2d3748;
+  margin-bottom: 1rem;
 }
 label, .css-1kyxreq, .css-14xtw13, .css-81oif8, .css-1aumxhk {
   color: #cbd5e0 !important;
@@ -76,7 +77,7 @@ label, .css-1kyxreq, .css-14xtw13, .css-81oif8, .css-1aumxhk {
 st.markdown("""
 <h1 style="text-align:center; color:#63b3ed; font-size: 2.8rem; margin-bottom: 0.2em; margin-top: 0.5rem;">🔍 Processador de Palavras-chave</h1>
 <p style="text-align:center; font-size: 1.1rem; color: #e2e8f0;">
-Envie arquivos com palavras-chave e termos de exclusão.
+Envie arquivos com palavras-chave e termos de exclusão. Visual escuro, animações suaves e UX aprimorado.
 </p>
 """, unsafe_allow_html=True)
 
@@ -107,18 +108,19 @@ with col_feedback:
     log_area = st.empty()
     log_buffer = []
 
-    col1, col2 = st.columns(2)
-    with col1:
-        start_button = st.button("🚀 Iniciar Processamento")
-    with col2:
-        download_button = st.button("⬇️ Baixar Resultado")
-
 def log(message):
     timestamp = time.strftime("[%H:%M:%S]")
     log_buffer.append(f"{timestamp} {message}")
     if len(log_buffer) > 100:
         log_buffer.pop(0)
     log_area.markdown(f'<div class="log-box">' + '<br>'.join(log_buffer) + '</div>', unsafe_allow_html=True)
+
+# Botões lado a lado após logs
+col1, col2 = st.columns(2)
+with col1:
+    start_button = st.button("🚀 Iniciar Processamento")
+with col2:
+    download_button = st.button("⬇️ Baixar Resultado")
 
 if start_button:
     if not keyword_files:
