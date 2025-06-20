@@ -6,7 +6,6 @@ import time
 
 st.set_page_config(page_title="Processador de Palavras-chave", layout="wide")
 
-# Estilo Dark Premium com UX refinado e espaçamento ideal
 st.markdown("""
 <style>
 body {
@@ -50,6 +49,7 @@ body {
   border-radius: 10px;
   font-weight: 600;
   transition: all 0.3s ease;
+  width: 100%;
 }
 .stButton>button:hover {
   box-shadow: 0 4px 16px rgba(90,103,216,0.4);
@@ -67,8 +67,8 @@ body {
   color: #e2e8f0;
   border: 1px solid #2d3748;
 }
-label, .css-1kyxreq, .css-14xtw13 {
-  color: #e2e8f0 !important;
+label, .css-1kyxreq, .css-14xtw13, .css-81oif8, .css-1aumxhk {
+  color: #cbd5e0 !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -76,7 +76,7 @@ label, .css-1kyxreq, .css-14xtw13 {
 st.markdown("""
 <h1 style="text-align:center; color:#63b3ed; font-size: 2.8rem; margin-bottom: 0.2em; margin-top: 0.5rem;">🔍 Processador de Palavras-chave</h1>
 <p style="text-align:center; font-size: 1.1rem; color: #e2e8f0;">
-Envie arquivos com palavras-chave e termos de exclusão. Visual escuro, animações suaves e UX aprimorado.
+Envie arquivos com palavras-chave e termos de exclusão.
 </p>
 """, unsafe_allow_html=True)
 
@@ -100,13 +100,18 @@ with col_uploads:
     os.makedirs(PRESET_DIR, exist_ok=True)
     preset_files = [f for f in os.listdir(PRESET_DIR) if f.endswith('.txt')]
     selected_presets = st.multiselect("Arquivos de Exclusão Predefinidos", preset_files)
-    mode = st.selectbox("Modo de Duplicatas", ['Global - Remove Todas as Duplicatas', 'Por Arquivo - Mantén se vierem de arquivos diferentes','Mesclar - Remove Duplicatas e Soma os Volumes'], index=2)
-    start_button = st.button("🚀 Iniciar Processamento")
+    mode = st.selectbox("Modo de Duplicatas",['Global - Remove Todas as Duplicatas', 'Por Arquivo - Mantén se vierem de arquivos diferentes','Mesclar - Remove Duplicatas e Soma os Volumes'], index=2)
 
 with col_feedback:
-    progress_bar = st.empty()
+    progress_bar = st.progress(0, text="Aguardando...")
     log_area = st.empty()
     log_buffer = []
+
+    col1, col2 = st.columns(2)
+    with col1:
+        start_button = st.button("🚀 Iniciar Processamento")
+    with col2:
+        download_button = st.button("⬇️ Baixar Resultado")
 
 def log(message):
     timestamp = time.strftime("[%H:%M:%S]")
