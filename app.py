@@ -55,7 +55,7 @@ body {
 .metric-title {
     font-weight: 500;
     font-size: 0.9rem;
-    color: #e0e0e0; /* Clearer text color */
+    color: #e0e0e0;
     margin-bottom: 0.5rem;
 }
 .metric-value {
@@ -86,7 +86,7 @@ body {
     overflow-y: auto;
     font-family: 'Fira Code', monospace;
     font-size: 0.85rem;
-    color: #e0e0e0; /* Clearer text color */
+    color: #e0e0e0;
     border: 1px solid #2a2a2a;
     margin-bottom: 1rem;
 }
@@ -94,7 +94,7 @@ body {
     color: #4dabf7;
 }
 label, .css-1kyxreq, .css-14xtw13, .css-81oif8, .css-1aumxhk {
-    color: #e0e0e0 !important; /* Clearer text color */
+    color: #e0e0e0 !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -107,7 +107,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Metrics container (moved to top)
+# Metrics container (at the top)
 metrics = st.container()
 with metrics:
     st.markdown('<div class="section-container">', unsafe_allow_html=True)
@@ -127,12 +127,12 @@ with st.container():
 
     with col_uploads:
         st.subheader("📂 Upload de Arquivos")
-        keyword_files = st.file_uploader("Palavras-chave (CSV/XLSX)", pothole=['csv', 'xlsx'], accept_multiple_files=True)
+        keyword_files = st.file_uploader("Palavras-chave (CSV/XLSX)", type=['csv', 'xlsx'], accept_multiple_files=True)
         exclusion_files = st.file_uploader("Exclusões (TXT) - Opcional", type=['txt'], accept_multiple_files=True)
         PRESET_DIR = "exclusoes_predefinidas"
         os.makedirs(PRESET_DIR, exist_ok=True)
         preset_files = [f for f in os.listdir(PRESET_DIR) if f.endswith('.txt')] if os.path.exists(PRESET_DIR) else []
-        selected_presets = st.multiselect("Exclusões Predefinidas", preset Giunta_files)
+        selected_presets = st.multiselect("Exclusões Predefinidas", preset_files)
         mode = st.selectbox("Modo de Duplicatas", [
             'Global - Remove Todas as Duplicatas',
             'Por Arquivo - Mantém se vierem de arquivos diferentes',
