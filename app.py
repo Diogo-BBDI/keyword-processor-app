@@ -6,7 +6,7 @@ import time
 
 st.set_page_config(page_title="Processador de Palavras-chave", layout="wide")
 
-# Estilo dark com UI/UX refinado
+# Estilo Dark Premium com UX refinado
 st.markdown("""
 <style>
 body {
@@ -15,28 +15,28 @@ body {
   font-family: 'Segoe UI', sans-serif;
 }
 .stApp {
-  background: linear-gradient(to bottom right, #0f1117, #1e2230);
+  background: linear-gradient(135deg, #0f1117 0%, #1e2230 100%);
 }
 .metric-card {
   padding: 1.5rem;
-  border-radius: 16px;
+  border-radius: 20px;
   background: linear-gradient(135deg, #1f2430, #292e3d);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
   text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.4s ease;
 }
 .metric-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  transform: scale(1.02);
+  box-shadow: 0 16px 32px rgba(0,0,0,0.45);
 }
 .metric-title {
   font-weight: 600;
   font-size: 1rem;
-  color: #a0aec0;
-  margin-bottom: 0.25rem;
+  color: #cbd5e0;
+  margin-bottom: 0.5rem;
 }
 .metric-value {
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 700;
   color: #63b3ed;
 }
@@ -53,12 +53,16 @@ body {
   box-shadow: 0 4px 16px rgba(90,103,216,0.4);
   transform: translateY(-2px);
 }
-.log-line {
+.log-box {
+  background: #1a202c;
+  border-radius: 12px;
+  padding: 1rem;
+  height: 300px;
+  overflow-y: auto;
   font-family: monospace;
   font-size: 13px;
   color: #cbd5e0;
-  border-bottom: 1px solid #2d3748;
-  padding: 2px 0;
+  border: 1px solid #2d3748;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -66,39 +70,45 @@ body {
 st.markdown("""
 <h1 style="text-align:center; color:#63b3ed; font-size: 2.8rem; margin-bottom: 0.2em;">🔍 Processador de Palavras-chave</h1>
 <p style="text-align:center; font-size: 1.1rem; color: #cbd5e0;">
-Upload arquivos CSV/XLSX com palavras-chave e TXT com termos de exclusão. O app filtra, combina e exporta com visual escuro otimizado.
+Envie arquivos com palavras-chave e termos de exclusão. Visual escuro, animações suaves e UX aprimorado.
 </p>
 """, unsafe_allow_html=True)
 
-PRESET_DIR = "exclusoes_predefinidas"
-os.makedirs(PRESET_DIR, exist_ok=True)
+# Dashboard em cima
+metrics = st.container()
 
-preset_files = [f for f in os.listdir(PRESET_DIR) if f.endswith('.txt')]
-selected_presets = st.multiselect("🔘 Selecionar arquivos de exclusão predefinidos", preset_files)
+# Lado esquerdo: uploads | Lado direito: progresso e logs
+col_uploads, col_feedback = st.columns([1.2, 1])
 
-col_upload, col_opts = st.columns([2, 1])
-with col_upload:
-    keyword_files = st.file_uploader("📂 Arquivos de Palavras-chave (CSV/XLSX)", type=['csv', 'xlsx'], accept_multiple_files=True)
-    exclusion_files = st.file_uploader("🗑 Arquivos de Exclusão (TXT) (opcional)", type=['txt'], accept_multiple_files=True)
-with col_opts:
-    mode = st.selectbox("Modo de Duplicatas", ['global', 'keep_by_source', 'merge_sources'], index=2)
+with col_uploads:
+    st.subheader("📂 Upload de Arquivos")
+    keyword_files = st.file_uploader("Palavras-chave (CSV/XLSX)", type=['csv', 'xlsx'], accept_multiple_files=True)
+    exclusion_files = st.file_uploader("Exclusões (TXT) - Opcional", type=['txt'], accept_multiple_files=True)
+    PRESET_DIR = "exclusoes_predefinidas"
+    os.makedirs(PRESET_DIR, exist_ok=True)
+    preset_files = [f for f in os.listdir(PRESET_DIR) if f.endswith('.txt')]
+    selected_presets = st.multiselect("Arquivos de Exclusão Predefinidos", preset_files)
+    mode = st.selectbox("Modo de Duplicatas", ['Mesclar - Remove Duplicatas e Soma os Volumes', 'Global - Remove Todas as Duplicatas', 'Por Arquivo - Mantén se vierem de arquivos diferentes'], index=2)
+    start_button = st.button("🚀 Iniciar Processamento")
 
-start_button = st.button("🚀 Iniciar Processamento")
+with col_feedback:
+    progress_bar = st.empty()
+    log_area = st.empty()
+    log_buffer = []
 
-placeholder_metrics = st.empty()
-placeholder_progress = st.empty()
-placeholder_status = st.empty()
-placeholder_logs = st.empty()
-
-log_buffer = []
+def log(message):
+    timestamp = time.strftime("[%H:%M:%S]")
+    log_buffer.append(f"{timestamp} {message}")
+    if len(log_buffer) > 100:
+        log_buffer.pop(0)
+    log_area.markdown(f'<div class="log-box">' + '<br>'.join(log_buffer) + '</div>', unsafe_allow_html=True)
 
 if start_button:
     if not keyword_files:
-        st.error("⚠️ Adicione pelo menos um arquivo de palavras-chave.")
+        st.error("⚠️ Nenhum arquivo de palavras-chave foi enviado.")
     else:
         remove_words = set()
-        placeholder_status.info("🔄 Lendo arquivos de exclusão...")
-        time.sleep(0.5)
+        log("🔄 Lendo arquivos de exclusão...")
 
         for txt in exclusion_files or []:
             lines = txt.read().decode('utf-8').splitlines()
@@ -113,13 +123,12 @@ if start_button:
         total_files = len(keyword_files)
 
         for i, f in enumerate(keyword_files):
+            log(f"📄 Processando {f.name}...")
             try:
-                placeholder_status.info(f"🔍 Processando {f.name}...")
                 if f.name.endswith('.csv'):
                     df = pd.read_csv(f)
                 else:
                     df = pd.read_excel(f)
-
                 cols = [c.lower() for c in df.columns]
                 kw_col = next((c for c in cols if 'keyword' in c or 'termo' in c), None)
                 vol_col = next((c for c in cols if 'volume' in c or 'search' in c), None) or kw_col
@@ -133,16 +142,14 @@ if start_button:
                 df['volume'] = pd.to_numeric(df[vol_col], errors='coerce').fillna(0).astype(int)
                 df['source'] = f.name
                 all_keywords.append(df[['keyword_cleaned', 'volume', 'source']])
-
-                log_buffer.append(f"✅ {f.name}: {len(df)} palavras válidas")
+                log(f"✅ {f.name}: {len(df)} entradas válidas")
             except Exception as e:
-                log_buffer.append(f"❌ Erro ao processar {f.name}: {str(e)}")
+                log(f"❌ Erro em {f.name}: {str(e)}")
 
-            placeholder_progress.progress((i + 1) / total_files)
-            placeholder_logs.markdown('<br>'.join(f'<div class="log-line">{line}</div>' for line in log_buffer), unsafe_allow_html=True)
+            progress_bar.progress((i + 1) / total_files)
 
         if all_keywords:
-            placeholder_status.info("🧮 Combinando e removendo duplicatas...")
+            log("🧮 Combinando e deduplicando...")
             df_all = pd.concat(all_keywords)
             if mode == 'global':
                 df_final = df_all.drop_duplicates(subset='keyword_cleaned')
@@ -160,31 +167,26 @@ if start_button:
             volume_total = df_final['volume'].sum()
             total_removidas = total_original - total_final
 
-            log_buffer.extend([
-                "\n=== RELATÓRIO FINAL ===",
-                f"Arquivos processados: {len(all_keywords)}",
-                f"Total original de palavras-chave: {total_original}",
-                f"Após combinação: {total_combinado}",
-                f"Após remoção de duplicatas: {total_final}",
-                f"Removidas: {total_removidas} entradas",
-                f"Volume final total: {volume_total:,.0f}"
-            ])
-            placeholder_logs.markdown('<br>'.join(f'<div class="log-line">{line}</div>' for line in log_buffer), unsafe_allow_html=True)
+            log("📊 Processamento concluído")
+            log(f"Total original: {total_original}")
+            log(f"Após combinação: {total_combinado}")
+            log(f"Removidas: {total_removidas} entradas")
+            log(f"Volume final: {volume_total:,.0f}")
 
-            with placeholder_metrics:
-                st.markdown("## 📊 Resultados")
+            with metrics:
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.markdown('<div class="metric-card"><div class="metric-title">Total original</div><div class="metric-value">{:,.0f}</div></div>'.format(total_original), unsafe_allow_html=True)
+                    st.markdown('<div class="metric-card"><div class="metric-title">Total Original</div><div class="metric-value">{:,.0f}</div></div>'.format(total_original), unsafe_allow_html=True)
                 with col2:
-                    st.markdown('<div class="metric-card"><div class="metric-title">Após deduplicação</div><div class="metric-value">{:,.0f}</div></div>'.format(total_final), unsafe_allow_html=True)
+                    st.markdown('<div class="metric-card"><div class="metric-title">Após Deduplicação</div><div class="metric-value">{:,.0f}</div></div>'.format(total_final), unsafe_allow_html=True)
                 with col3:
-                    st.markdown('<div class="metric-card"><div class="metric-title">Volume total</div><div class="metric-value">{:,.0f}</div></div>'.format(volume_total), unsafe_allow_html=True)
+                    st.markdown('<div class="metric-card"><div class="metric-title">Volume Total</div><div class="metric-value">{:,.0f}</div></div>'.format(volume_total), unsafe_allow_html=True)
 
             csv = df_final.to_csv(index=False).encode('utf-8')
-            st.download_button("📥 Baixar CSV Processado", csv, file_name="keywords_processadas.csv", mime='text/csv')
-            st.markdown("---")
+            st.download_button("📥 Baixar CSV", csv, file_name="keywords_processadas.csv", mime='text/csv')
             st.dataframe(df_final.head(50))
 
-        placeholder_status.success("✅ Processamento concluído!")
-        placeholder_progress.empty()
+        else:
+            log("⚠️ Nenhum dado válido encontrado.")
+
+        progress_bar.empty()
