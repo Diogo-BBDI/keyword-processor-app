@@ -360,7 +360,7 @@ label, .css-1kyxreq, .css-14xtw13, .css-81oif8, .css-1aumxhk {
 # Header with features
 st.markdown("""
 <div class="header-container">
-    <h1 class="header-title">🚀 Keyword Processor Pro</h1>
+    <h1 class="header-title">🚀 Keyword Processor</h1>
     <p class="header-subtitle">
         Ferramenta para processamento e análise de palavras-chave com deduplicação inteligente
     </p>
