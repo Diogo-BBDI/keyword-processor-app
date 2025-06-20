@@ -6,7 +6,7 @@ import time
 
 st.set_page_config(page_title="Processador de Palavras-chave", layout="wide")
 
-# Estilo Dark Premium com UX refinado
+# Estilo Dark Premium com UX refinado e espaçamento ideal
 st.markdown("""
 <style>
 body {
@@ -16,9 +16,11 @@ body {
 }
 .stApp {
   background: linear-gradient(135deg, #0f1117 0%, #1e2230 100%);
+  padding-bottom: 2rem;
 }
 .metric-card {
   padding: 1.5rem;
+  margin-bottom: 1.5rem;
   border-radius: 20px;
   background: linear-gradient(135deg, #1f2430, #292e3d);
   box-shadow: 0 8px 24px rgba(0,0,0,0.35);
@@ -32,7 +34,7 @@ body {
 .metric-title {
   font-weight: 600;
   font-size: 1rem;
-  color: #cbd5e0;
+  color: #e2e8f0;
   margin-bottom: 0.5rem;
 }
 .metric-value {
@@ -57,11 +59,12 @@ body {
   background: #1a202c;
   border-radius: 12px;
   padding: 1rem;
+  margin-top: 1.5rem;
   height: 300px;
   overflow-y: auto;
   font-family: monospace;
   font-size: 13px;
-  color: #cbd5e0;
+  color: #e2e8f0;
   border: 1px solid #2d3748;
 }
 </style>
@@ -69,15 +72,21 @@ body {
 
 st.markdown("""
 <h1 style="text-align:center; color:#63b3ed; font-size: 2.8rem; margin-bottom: 0.2em;">🔍 Processador de Palavras-chave</h1>
-<p style="text-align:center; font-size: 1.1rem; color: #cbd5e0;">
+<p style="text-align:center; font-size: 1.1rem; color: #e2e8f0;">
 Envie arquivos com palavras-chave e termos de exclusão. Visual escuro, animações suaves e UX aprimorado.
 </p>
 """, unsafe_allow_html=True)
 
-# Dashboard em cima
+# Espaço entre header e dashboard
+st.markdown("<div style='margin-top: 2rem'></div>", unsafe_allow_html=True)
+
+# Dashboard no topo
 metrics = st.container()
 
-# Lado esquerdo: uploads | Lado direito: progresso e logs
+# Espaço entre dashboard e área de uploads/logs
+st.markdown("<div style='margin-top: 1rem'></div>", unsafe_allow_html=True)
+
+# Layout principal
 col_uploads, col_feedback = st.columns([1.2, 1])
 
 with col_uploads:
@@ -88,7 +97,7 @@ with col_uploads:
     os.makedirs(PRESET_DIR, exist_ok=True)
     preset_files = [f for f in os.listdir(PRESET_DIR) if f.endswith('.txt')]
     selected_presets = st.multiselect("Arquivos de Exclusão Predefinidos", preset_files)
-    mode = st.selectbox("Modo de Duplicatas", ['Mesclar - Remove Duplicatas e Soma os Volumes', 'Global - Remove Todas as Duplicatas', 'Por Arquivo - Mantén se vierem de arquivos diferentes'], index=2)
+    mode = st.selectbox("Modo de Duplicatas", ['Global - Remove Todas as Duplicatas', 'Por Arquivo - Mantén se vierem de arquivos diferentes','Mesclar - Remove Duplicatas e Soma os Volumes'], index=2)
     start_button = st.button("🚀 Iniciar Processamento")
 
 with col_feedback:
