@@ -109,9 +109,7 @@ col_uploads, col_feedback = st.columns([1.2, 1])
 
 with col_uploads:
     st.markdown("""
-    <div class="upload-section">
-        <div class="upload-header">📂 Upload de Arquivos</div>
-    </div>
+    <div class="upload-header">📂 Upload de Arquivos</div>
     """, unsafe_allow_html=True)
     
     keyword_files = st.file_uploader("Palavras-chave (CSV/XLSX)", type=['csv', 'xlsx'], accept_multiple_files=True)
