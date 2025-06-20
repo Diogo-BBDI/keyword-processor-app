@@ -17,6 +17,7 @@ body {
 .stApp {
   background: linear-gradient(135deg, #0f1117 0%, #1e2230 100%);
   padding-bottom: 2rem;
+  padding-top: 0.5rem;
 }
 .metric-card {
   padding: 1.5rem;
@@ -68,7 +69,25 @@ body {
   color: #e2e8f0;
   border: 1px solid #2d3748;
   margin-bottom: 1rem;
+  position: sticky;
+  top: 20px;
+  z-index: 100;
 }
+.upload-section {
+  background: rgba(31, 36, 48, 0.6);
+  padding: 1.5rem;
+  border-radius: 15px;
+  border: 1px solid #2d3748;
+  margin-bottom: 1rem;
+}
+.upload-header {
+  color: #a0aec0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
 label, .css-1kyxreq, .css-14xtw13, .css-81oif8, .css-1aumxhk {
   color: #cbd5e0 !important;
 }
@@ -76,20 +95,25 @@ label, .css-1kyxreq, .css-14xtw13, .css-81oif8, .css-1aumxhk {
 """, unsafe_allow_html=True)
 
 st.markdown("""
-<h1 style="text-align:center; color:#63b3ed; font-size: 2.8rem; margin-bottom: 0.2em; margin-top: 0.5rem;">🔍 Processador de Palavras-chave</h1>
+<h1 style="text-align:center; color:#63b3ed; font-size: 2.8rem; margin-bottom: 0.2em; margin-top: 0rem;">🔍 Processador de Palavras-chave</h1>
 <p style="text-align:center; font-size: 1.1rem; color: #e2e8f0;">
 Envie arquivos com palavras-chave e termos de exclusão.
 </p>
 """, unsafe_allow_html=True)
 
-st.markdown("<div style='margin-top: 1.2rem'></div>", unsafe_allow_html=True)
+st.markdown("<div style='margin-top: 0.5rem'></div>", unsafe_allow_html=True)
 metrics = st.container()
-st.markdown("<div style='margin-top: 1rem'></div>", unsafe_allow_html=True)
+st.markdown("<div style='margin-top: 0.5rem'></div>", unsafe_allow_html=True)
 
 col_uploads, col_feedback = st.columns([1.2, 1])
 
 with col_uploads:
-    st.subheader("📂 Upload de Arquivos")
+    st.markdown("""
+    <div class="upload-section">
+        <div class="upload-header">📂 Upload de Arquivos</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
     keyword_files = st.file_uploader("Palavras-chave (CSV/XLSX)", type=['csv', 'xlsx'], accept_multiple_files=True)
     exclusion_files = st.file_uploader("Exclusões (TXT) - Opcional", type=['txt'], accept_multiple_files=True)
     PRESET_DIR = "exclusoes_predefinidas"
@@ -101,8 +125,14 @@ with col_uploads:
 with col_feedback:
     progress_status = st.empty()
     progress_bar = st.progress(0)
-    log_area = st.empty()
+    
+    # Log box fixo e sempre visível
     log_buffer = []
+    log_area = st.empty()
+    
+    # Inicializar log box vazio mas visível
+    log_area.markdown(f'<div class="log-box">Aguardando processamento...</div>', unsafe_allow_html=True)
+    
     button_col1, button_col2 = st.columns(2)
     with button_col1:
         start_button = st.button("🚀 Iniciar Processamento")
