@@ -4,7 +4,7 @@ import io
 import os
 import time
 
-st.set_page_config(page_title="Keyword Processor Pro", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Keyword Processor", layout="wide", initial_sidebar_state="collapsed")
 
 # CSS Professional Dark Theme com ajustes
 st.markdown("""
@@ -362,7 +362,7 @@ st.markdown("""
 <div class="header-container">
     <h1 class="header-title">🚀 Keyword Processor Pro</h1>
     <p class="header-subtitle">
-        Ferramenta profissional para processamento e análise de palavras-chave com deduplicação inteligente
+        Ferramenta para processamento e análise de palavras-chave com deduplicação inteligente
     </p>
     <div style="margin-top: 1rem;">
         <span class="feature-badge">📊 Múltiplos Formatos</span>
