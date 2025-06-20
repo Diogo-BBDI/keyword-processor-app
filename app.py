@@ -857,6 +857,6 @@ if start_button:
             
         else:
             progress_status.error("❌ Nenhum dado válido foi processado.")
-            log("❌ Processamento fal dasdahou - nenhum dado válido encontrado", "error")
+            log("❌ Processamento falhou - nenhum dado válido encontrado", "error")
         
-        progress_bar.empty() 
+        progress_bar.empty()
