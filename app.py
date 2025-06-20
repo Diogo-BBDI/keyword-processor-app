@@ -59,7 +59,7 @@ body {
   background: #1a202c;
   border-radius: 12px;
   padding: 1rem;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
   height: 300px;
   overflow-y: auto;
   font-family: monospace;
@@ -67,18 +67,21 @@ body {
   color: #e2e8f0;
   border: 1px solid #2d3748;
 }
+label, .css-1kyxreq, .css-14xtw13 {
+  color: #e2e8f0 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown("""
-<h1 style="text-align:center; color:#63b3ed; font-size: 2.8rem; margin-bottom: 0.2em;">🔍 Processador de Palavras-chave</h1>
+<h1 style="text-align:center; color:#63b3ed; font-size: 2.8rem; margin-bottom: 0.2em; margin-top: 0.5rem;">🔍 Processador de Palavras-chave</h1>
 <p style="text-align:center; font-size: 1.1rem; color: #e2e8f0;">
 Envie arquivos com palavras-chave e termos de exclusão. Visual escuro, animações suaves e UX aprimorado.
 </p>
 """, unsafe_allow_html=True)
 
 # Espaço entre header e dashboard
-st.markdown("<div style='margin-top: 2rem'></div>", unsafe_allow_html=True)
+st.markdown("<div style='margin-top: 1.2rem'></div>", unsafe_allow_html=True)
 
 # Dashboard no topo
 metrics = st.container()
