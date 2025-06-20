@@ -6,39 +6,61 @@ import time
 
 st.set_page_config(page_title="Processador de Palavras-chave", layout="wide")
 
-# Estilo animado
+# Estilo aprimorado com UI/UX animado
 st.markdown("""
 <style>
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {opacity: 0; transform: translateY(10px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+body {
+  background: linear-gradient(to bottom right, #eaf4ff, #f2f7ff);
 }
 .block-animado div {
   animation: fadeIn 0.6s ease-in-out;
 }
 .metric-card {
   padding: 1.5rem;
-  border-radius: 12px;
-  background: linear-gradient(145deg, #ffffff, #f1f1f1);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-radius: 20px;
+  background: linear-gradient(135deg, #ffffff, #f4f8ff);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
   text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
 }
 .metric-title {
   font-weight: 600;
-  font-size: 1rem;
-  color: #444;
+  font-size: 1.1rem;
+  color: #2a2a2a;
+  margin-bottom: 0.25rem;
 }
 .metric-value {
-  font-size: 1.6rem;
-  font-weight: bold;
-  color: #222;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1f4e79;
+}
+.stButton>button {
+  background: linear-gradient(to right, #3b82f6, #6366f1);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.stButton>button:hover {
+  box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+  transform: translateY(-1px);
 }
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown("""
 <div class="block-animado">
-<h1 style="text-align:center; color:#1f4e79; font-size: 2.8rem;">🔍 Processador de Palavras-chave</h1>
+<h1 style="text-align:center; color:#1f4e79; font-size: 2.8rem; margin-bottom: 0.2em;">🔍 Processador de Palavras-chave</h1>
 <p style="text-align:center; font-size: 1.1rem; color: #444;">
 Faça upload de arquivos CSV/XLSX com palavras-chave e TXT com termos para exclusão. O app limpará, combinará e exportará tudo automaticamente.
 </p>
@@ -54,11 +76,7 @@ selected_presets = st.multiselect("🔘 Selecionar arquivos de exclusão predefi
 with st.expander("📁 Upload de Arquivos", expanded=True):
     keyword_files = st.file_uploader("Arquivos de Palavras-chave (CSV/XLSX)", type=['csv', 'xlsx'], accept_multiple_files=True)
     exclusion_files = st.file_uploader("Arquivos de Exclusão (TXT) (opcional)", type=['txt'], accept_multiple_files=True)
-    mode = st.selectbox("Modo de Duplicatas", [
-        'global',
-        'keep_by_source',
-        'merge_sources'
-    ], index=2)
+    mode = st.selectbox("Modo de Duplicatas", ['global', 'keep_by_source', 'merge_sources'], index=2)
 
 progress_bar = st.empty()
 status_text = st.empty()
