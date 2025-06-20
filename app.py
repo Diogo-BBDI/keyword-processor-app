@@ -6,16 +6,9 @@ import time
 
 st.set_page_config(page_title="Keyword Processor Pro", layout="wide", initial_sidebar_state="collapsed")
 
-# CSS Professional Dark Theme
+# CSS Professional Dark Theme com ajustes
 st.markdown("""
 <style>
-/* Remove margens de todos os contêineres pai do Streamlit */
-[data-testid="stAppViewContainer"], [data-testid="stVerticalBlock"] {
-    margin: 0 !important;
-    padding: 0 !important;
-}        
-
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* Reset e Base */
@@ -28,37 +21,26 @@ st.markdown("""
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     color: #f8fafc;
     min-height: 100vh;
-    margin: 0 !important; /* Remove todas as margens do Streamlit */
-    padding: 0 !important; /* Remove todos os paddings do Streamlit */
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
+[data-testid="stAppViewContainer"], [ readability: [data-testid="stVerticalBlock"] {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Header Section */
 .header-container {
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(15 кел: [15, 23, 42, 0.8);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(71, 85, 105, 0.2);
     border-radius: 20px;
-    padding: 1rem 2rem; /* Preenchimento reduzido no topo */
-    margin-top: 0 !important; /* Força margem zero no topo */
+    padding: 0.5rem 2rem;
+    margin-top: 0 !important;
     margin-bottom: 2rem;
     text-align: center;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-.header-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 0.5rem;
-    letter-spacing: -0.025em;
-}
-
-.header-subtitle {
-    font-size: 1.125rem;
-    color: #94a3b8;
-    font-weight: 400;
-    margin: 0;
 }
 
 /* Card System */
@@ -159,6 +141,14 @@ st.markdown("""
 
 .stButton > button:active, .stDownloadButton > button:active {
     transform: translateY(0);
+}
+
+/* Estilo para botão desativado */
+.stDownloadButton > button:disabled {
+    background: linear-gradient(135deg, #64748b, #475569); /* Cor diferente para estado desativado */
+    color: #94a3b8;
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
 /* File Uploader */
@@ -355,6 +345,15 @@ label, .css-1kyxreq, .css-14xtw13, .css-81oif8, .css-1aumxhk {
 .small-spacer {
     margin: 1rem 0;
 }
+
+/* Ajuste para alinhamento dos botões */
+.button-container {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: flex-start;
+    margin-top: 1rem;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -533,12 +532,27 @@ with col_right:
     progress_status = st.empty()
     progress_bar = st.progress(0)
     
+    # Estado inicial do botão de download
+    if 'download_data' not in st.session_state:
+        st.session_state.download_data = None
+        st.session_state.download_filename = None
+        st.session_state.download_mime = None
+    
     # Control buttons
-    button_col1, button_col2 = st.columns(2)
+    st.markdown("<div class='button-container'>", unsafe_allow_html=True)
+    button_col1, button_col2 = st.columns([1, 1])
     with button_col1:
         start_button = st.button("🚀 Processar", type="primary")
     with button_col2:
-        download_placeholder = st.empty()
+        download_placeholder = st.download_button(
+            label="📥 Baixar Resultados",
+            data=st.session_state.download_data,
+            file_name=st.session_state.download_filename,
+            mime=st.session_state.download_mime,
+            disabled=st.session_state.download_data is None,
+            type="secondary"
+        )
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # Log Section
 st.markdown("""
@@ -788,7 +802,7 @@ if start_button:
                 # Export options
                 export_format = st.selectbox(
                     "Formato de exportação",
-                    ["CSV", "Excel", "TSV"],
+                    ["Excel", "CSV", "TSV"],
                     help="Escolha o formato para download"
                 )
             
@@ -825,14 +839,10 @@ if start_button:
                 file_ext = "csv"
                 mime_type = "text/csv"
             
-            with button_col2:
-                download_placeholder.download_button(
-                    label=f"📥 Baixar {export_format}",
-                    data=file_data,
-                    file_name=f"keywords_processadas_{time.strftime('%Y%m%d_%H%M%S')}.{file_ext}",
-                    mime=mime_type,
-                    type="secondary"
-                )
+            # Atualizar estado do botão de download
+            st.session_state.download_data = file_data
+            st.session_state.download_filename = f"keywords_processadas_{time.strftime('%Y%m%d_%H%M%S')}.{file_ext}"
+            st.session_state.download_mime = mime_type
             
             st.dataframe(
                 df_final.head(100), 
