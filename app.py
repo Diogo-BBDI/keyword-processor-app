@@ -6,7 +6,6 @@ import time
 
 st.set_page_config(page_title="Processador de Palavras-chave", layout="wide")
 
-# Estilo Dark Premium com UX refinado e espaçamento ideal
 st.markdown("""
 <style>
 body {
@@ -73,7 +72,7 @@ body {
 st.markdown("""
 <h1 style="text-align:center; color:#63b3ed; font-size: 2.8rem; margin-bottom: 0.2em;">🔍 Processador de Palavras-chave</h1>
 <p style="text-align:center; font-size: 1.1rem; color: #e2e8f0;">
-Envie arquivos com palavras-chave e termos de exclusão. Visual escuro, animações suaves e UX aprimorado.
+Envie arquivos com palavras-chave e termos de exclusão.
 </p>
 """, unsafe_allow_html=True)
 
