@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 import pandas as pd
 import io
@@ -865,4 +864,3 @@ if start_button:
             log("❌ Processamento falhou - nenhum dado válido encontrado", "error")
         
         progress_bar.empty()
-```
