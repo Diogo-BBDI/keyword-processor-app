@@ -6,7 +6,7 @@ import time
 
 st.set_page_config(page_title="Keyword Processor Pro", layout="wide", initial_sidebar_state="collapsed")
 
-# CSS Professional Dark Theme com ajustes
+# CSS Professional Dark Theme
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -21,26 +21,35 @@ st.markdown("""
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     color: #f8fafc;
     min-height: 100vh;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-[data-testid="stAppViewContainer"], [ readability: [data-testid="stVerticalBlock"] {
-    margin: 0 !important;
-    padding: 0 !important;
 }
 
 /* Header Section */
 .header-container {
-    background: rgba(15 кел: [15, 23, 42, 0.8);
+    background: rgba(15, 23, 42, 0.8);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(71, 85, 105, 0.2);
     border-radius: 20px;
-    padding: 0.5rem 2rem;
-    margin-top: 0 !important;
+    padding: 2rem;
     margin-bottom: 2rem;
     text-align: center;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.header-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.025em;
+}
+
+.header-subtitle {
+    font-size: 1.125rem;
+    color: #94a3b8;
+    font-weight: 400;
+    margin: 0;
 }
 
 /* Card System */
@@ -141,14 +150,6 @@ st.markdown("""
 
 .stButton > button:active, .stDownloadButton > button:active {
     transform: translateY(0);
-}
-
-/* Estilo para botão desativado */
-.stDownloadButton > button:disabled {
-    background: linear-gradient(135deg, #64748b, #475569); /* Cor diferente para estado desativado */
-    color: #94a3b8;
-    cursor: not-allowed;
-    box-shadow: none;
 }
 
 /* File Uploader */
@@ -345,15 +346,6 @@ label, .css-1kyxreq, .css-14xtw13, .css-81oif8, .css-1aumxhk {
 .small-spacer {
     margin: 1rem 0;
 }
-
-/* Ajuste para alinhamento dos botões */
-.button-container {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    justify-content: flex-start;
-    margin-top: 1rem;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -532,27 +524,12 @@ with col_right:
     progress_status = st.empty()
     progress_bar = st.progress(0)
     
-    # Estado inicial do botão de download
-    if 'download_data' not in st.session_state:
-        st.session_state.download_data = None
-        st.session_state.download_filename = None
-        st.session_state.download_mime = None
-    
     # Control buttons
-    st.markdown("<div class='button-container'>", unsafe_allow_html=True)
-    button_col1, button_col2 = st.columns([1, 1])
+    button_col1, button_col2 = st.columns(2)
     with button_col1:
         start_button = st.button("🚀 Processar", type="primary")
     with button_col2:
-        download_placeholder = st.download_button(
-            label="📥 Baixar Resultados",
-            data=st.session_state.download_data,
-            file_name=st.session_state.download_filename,
-            mime=st.session_state.download_mime,
-            disabled=st.session_state.download_data is None,
-            type="secondary"
-        )
-    st.markdown("</div>", unsafe_allow_html=True)
+        download_placeholder = st.empty()
 
 # Log Section
 st.markdown("""
@@ -790,69 +767,27 @@ if start_button:
             log(f"   • Registros removidos: {total_removed:,}", "info")
             log(f"   • Volume total: {total_volume:,}", "info")
             
-            # Display preview with enhanced info
-            st.markdown("<div class='section-spacer'></div>", unsafe_allow_html=True)
+            # Prepare download
+            csv_data = df_final.to_csv(index=False, encoding='utf-8')
             
-            preview_col1, preview_col2 = st.columns([2, 1])
-            
-            with preview_col1:
-                st.markdown("### 📋 Prévia dos Resultados")
-            
-            with preview_col2:
-                # Export options
-                export_format = st.selectbox(
-                    "Formato de exportação",
-                    ["CSV", "Excel", "TSV"],
-                    help="Escolha o formato para download"
+            with button_col2:
+                download_placeholder.download_button(
+                    label="📥 Baixar CSV",
+                    data=csv_data.encode('utf-8'),
+                    file_name=f"keywords_processadas_{time.strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv",
+                    type="secondary"
                 )
             
-            # Show data quality insights
-            if len(df_final) > 0:
-                avg_volume = df_final['volume'].mean()
-                median_volume = df_final['volume'].median()
-                max_volume = df_final['volume'].max()
-                zero_volume = len(df_final[df_final['volume'] == 0])
-                
-                st.markdown(f"""
-                <div class="info-panel">
-                    📊 <strong>Insights dos Dados:</strong><br>
-                    • Volume médio: {avg_volume:,.0f} | Volume mediano: {median_volume:,.0f}<br>
-                    • Maior volume: {max_volume:,.0f} | Registros sem volume: {zero_volume:,}<br>
-                    • Fontes únicas: {df_final['source'].nunique()}
-                </div>
-                """, unsafe_allow_html=True)
+            progress_status.success(f"✅ Processamento concluído! {total_final:,} palavras-chave processadas.")
             
-            # Prepare download based on format
-            if export_format == "Excel":
-                output = io.BytesIO()
-                with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                    df_final.to_excel(writer, index=False, sheet_name='Keywords')
-                file_data = output.getvalue()
-                file_ext = "xlsx"
-                mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            elif export_format == "TSV":
-                file_data = df_final.to_csv(index=False, sep='\t', encoding='utf-8').encode('utf-8')
-                file_ext = "tsv"
-                mime_type = "text/tab-separated-values"
-            else:  # CSV
-                file_data = df_final.to_csv(index=False, encoding='utf-8').encode('utf-8')
-                file_ext = "csv"
-                mime_type = "text/csv"
-            
-            # Atualizar estado do botão de download
-            st.session_state.download_data = file_data
-            st.session_state.download_filename = f"keywords_processadas_{time.strftime('%Y%m%d_%H%M%S')}.{file_ext}"
-            st.session_state.download_mime = mime_type
-            
+            # Display preview
+            st.markdown("<div class='section-spacer'></div>", unsafe_allow_html=True)
+            st.markdown("### 📋 Prévia dos Resultados")
             st.dataframe(
                 df_final.head(100), 
                 use_container_width=True,
-                hide_index=True,
-                column_config={
-                    "keyword_cleaned": st.column_config.TextColumn("Palavra-chave", width="large"),
-                    "volume": st.column_config.NumberColumn("Volume", format="%d"),
-                    "source": st.column_config.TextColumn("Fonte", width="medium")
-                }
+                hide_index=True
             )
             
         else:
