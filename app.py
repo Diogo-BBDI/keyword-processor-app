@@ -7,7 +7,7 @@ import uuid
 
 st.set_page_config(page_title="Processador de Palavras-chave", layout="wide")
 
-# Updated CSS for improved UI/UX
+# Updated CSS for improved UI/UX with clearer text colors
 st.markdown("""
 <style>
 body {
@@ -29,7 +29,7 @@ body {
     font-weight: 700;
 }
 .header-subtitle {
-    color: #a0a0a0;
+    color: #b0b0b0;
     font-size: 1rem;
 }
 .section-container {
@@ -55,7 +55,7 @@ body {
 .metric-title {
     font-weight: 500;
     font-size: 0.9rem;
-    color: #b0b0b0;
+    color: #e0e0e0; /* Clearer text color */
     margin-bottom: 0.5rem;
 }
 .metric-value {
@@ -86,7 +86,7 @@ body {
     overflow-y: auto;
     font-family: 'Fira Code', monospace;
     font-size: 0.85rem;
-    color: #d0d0d0;
+    color: #e0e0e0; /* Clearer text color */
     border: 1px solid #2a2a2a;
     margin-bottom: 1rem;
 }
@@ -94,7 +94,7 @@ body {
     color: #4dabf7;
 }
 label, .css-1kyxreq, .css-14xtw13, .css-81oif8, .css-1aumxhk {
-    color: #b0b0b0 !important;
+    color: #e0e0e0 !important; /* Clearer text color */
 }
 </style>
 """, unsafe_allow_html=True)
@@ -107,19 +107,32 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Layout with containers
+# Metrics container (moved to top)
+metrics = st.container()
+with metrics:
+    st.markdown('<div class="section-container">', unsafe_allow_html=True)
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown('<div class="metric-card"><div class="metric-title">Total Original</div><div class="metric-value" id="total_original">0</div></div>', unsafe_allow_html=True)
+    with col2:
+        st.markdown('<div class="metric-card"><div class="metric-title">Após Deduplicação</div><div class="metric-value" id="total_final">0</div></div>', unsafe_allow_html=True)
+    with col3:
+        st.markdown('<div class="metric-card"><div class="metric-title">Volume Total</div><div class="metric-value" id="volume_total">0</div></div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# Layout with containers for uploads and feedback
 with st.container():
     st.markdown('<div class="section-container">', unsafe_allow_html=True)
     col_uploads, col_feedback = st.columns([1.3, 1])
 
     with col_uploads:
         st.subheader("📂 Upload de Arquivos")
-        keyword_files = st.file_uploader("Palavras-chave (CSV/XLSX)", type=['csv', 'xlsx'], accept_multiple_files=True)
+        keyword_files = st.file_uploader("Palavras-chave (CSV/XLSX)", pothole=['csv', 'xlsx'], accept_multiple_files=True)
         exclusion_files = st.file_uploader("Exclusões (TXT) - Opcional", type=['txt'], accept_multiple_files=True)
         PRESET_DIR = "exclusoes_predefinidas"
         os.makedirs(PRESET_DIR, exist_ok=True)
-        preset_files = [f for f in os.listdir(PRESET_DIR) if f.endswith('.txt')]
-        selected_presets = st.multiselect("Exclusões Predefinidas", preset_files)
+        preset_files = [f for f in os.listdir(PRESET_DIR) if f.endswith('.txt')] if os.path.exists(PRESET_DIR) else []
+        selected_presets = st.multiselect("Exclusões Predefinidas", preset Giunta_files)
         mode = st.selectbox("Modo de Duplicatas", [
             'Global - Remove Todas as Duplicatas',
             'Por Arquivo - Mantém se vierem de arquivos diferentes',
@@ -139,8 +152,18 @@ with st.container():
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# Metrics container
-metrics = st.container()
+# Cache file loading
+@st.cache_data
+def load_file(file, file_type):
+    if file_type == 'csv':
+        return pd.read_csv(file, chunksize=10000)
+    return pd.read_excel(file)
+
+# Cache exclusion file reading
+@st.cache_data
+def load_exclusion_file(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        return [line.strip().lower() for line in f.readlines() if line.strip()]
 
 def log(message):
     timestamp = time.strftime("[%H:%M:%S]")
@@ -167,9 +190,7 @@ if start_button:
 
             for fname in selected_presets:
                 try:
-                    with open(os.path.join(PRESET_DIR, fname), 'r', encoding='utf-8') as f:
-                        lines = f.readlines()
-                        remove_words.update(line.strip().lower() for line in lines if line.strip())
+                    remove_words.update(load_exclusion_file(os.path.join(PRESET_DIR, fname)))
                 except Exception as e:
                     log(f"❌ Erro ao ler exclusão predefinida {fname}: {str(e)}")
 
@@ -179,28 +200,47 @@ if start_button:
             for i, f in enumerate(keyword_files):
                 log(f"📄 Processando {f.name}...")
                 try:
-                    if f.name.endswith('.csv'):
-                        df = pd.read_csv(f)
+                    file_type = 'csv' if f.name.endswith('.csv') else 'xlsx'
+                    df_chunks = load_file(f, file_type)
+                    if file_type == 'csv':
+                        for chunk in df_chunks:
+                            cols = [c.lower() for c in chunk.columns]
+                            kw_col = next((c for c in cols if 'keyword' in c or 'termo' in c), None)
+                            vol_col = next((c for c in cols if 'volume' in c or 'search' in c), None) or kw_col
+
+                            if not kw_col:
+                                log(f"❌ Nenhuma coluna de palavras-chave encontrada em {f.name}")
+                                continue
+
+                            chunk.columns = cols
+                            chunk = chunk[chunk[kw_col].notnull()]
+                            chunk['keyword_cleaned'] = chunk[kw_col].astype(str).str.lower().apply(
+                                lambda x: ' '.join(w for w in x.split() if w not in remove_words)
+                            )
+                            chunk = chunk[chunk['keyword_cleaned'] != '']
+                            chunk['volume'] = pd.to_numeric(chunk[vol_col], errors='coerce').fillna(0).astype(int)
+                            chunk['source'] = f.name
+                            all_keywords.append(chunk[['keyword_cleaned', 'volume', 'source']])
                     else:
-                        df = pd.read_excel(f)
-                    cols = [c.lower() for c in df.columns]
-                    kw_col = next((c for c in cols if 'keyword' in c or 'termo' in c), None)
-                    vol_col = next((c for c in cols if 'volume' in c or 'search' in c), None) or kw_col
+                        df = df_chunks
+                        cols = [c.lower() for c in df.columns]
+                        kw_col = next((c for c in cols if 'keyword' in c or 'termo' in c), None)
+                        vol_col = next((c for c in cols if 'volume' in c or 'search' in c), None) or kw_col
 
-                    if not kw_col:
-                        log(f"❌ Nenhuma coluna de palavras-chave encontrada em {f.name}")
-                        continue
+                        if not kw_col:
+                            log(f"❌ Nenhuma coluna de palavras-chave encontrada em {f.name}")
+                            continue
 
-                    df.columns = cols
-                    df = df[df[kw_col].notnull()]
-                    df['keyword_cleaned'] = df[kw_col].astype(str).str.lower().apply(
-                        lambda x: ' '.join(w for w in x.split() if w not in remove_words)
-                    )
-                    df = df[df['keyword_cleaned'] != '']
-                    df['volume'] = pd.to_numeric(df[vol_col], errors='coerce').fillna(0).astype(int)
-                    df['source'] = f.name
-                    all_keywords.append(df[['keyword_cleaned', 'volume', 'source']])
-                    log(f"✅ {f.name}: {len(df)} entradas válidas")
+                        df.columns = cols
+                        df = df[df[kw_col].notnull()]
+                        df['keyword_cleaned'] = df[kw_col].astype(str).str.lower().apply(
+                            lambda x: ' '.join(w for w in x.split() if w not in remove_words)
+                        )
+                        df = df[df['keyword_cleaned'] != '']
+                        df['volume'] = pd.to_numeric(df[vol_col], errors='coerce').fillna(0).astype(int)
+                        df['source'] = f.name
+                        all_keywords.append(df[['keyword_cleaned', 'volume', 'source']])
+                    log(f"✅ {f.name}: {sum(len(df) for df in all_keywords if df['source'].iloc[0] == f.name)} entradas válidas")
                 except Exception as e:
                     log(f"❌ Erro em {f.name}: {str(e)}")
 
@@ -235,11 +275,11 @@ if start_button:
                     st.markdown('<div class="section-container">', unsafe_allow_html=True)
                     col1, col2, col3 = st.columns(3)
                     with col1:
-                        st.markdown('<div class="metric-card"><div class="metric-title">Total Original</div><div class="metric-value">{:,.0f}</div></div>'.format(total_original), unsafe_allow_html=True)
+                        st.markdown(f'<div class="metric-card"><div class="metric-title">Total Original</div><div class="metric-value">{total_original:,.0f}</div></div>', unsafe_allow_html=True)
                     with col2:
-                        st.markdown('<div class="metric-card"><div class="metric-title">Após Deduplicação</div><div class="metric-value">{:,.0f}</div></div>'.format(total_final), unsafe_allow_html=True)
+                        st.markdown(f'<div class="metric-card"><div class="metric-title">Após Deduplicação</div><div class="metric-value">{total_final:,.0f}</div></div>', unsafe_allow_html=True)
                     with col3:
-                        st.markdown('<div class="metric-card"><div class="metric-title">Volume Total</div><div class="metric-value">{:,.0f}</div></div>'.format(volume_total), unsafe_allow_html=True)
+                        st.markdown(f'<div class="metric-card"><div class="metric-title">Volume Total</div><div class="metric-value">{volume_total:,.0f}</div></div>', unsafe_allow_html=True)
                     st.markdown('</div>', unsafe_allow_html=True)
 
                 csv = df_final.to_csv(index=False).encode('utf-8')
